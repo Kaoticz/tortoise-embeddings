@@ -6,9 +6,7 @@ This file describes the project's stack, conventions, and code standards for AI 
 
 ## Stack
 
-- **API framework:** FastAPI
-- **ORM / Database:** TortoiseORM + PostgreSQL
-- **AI layer:** Pydantic AI
+- **ORM / Database:** TortoiseORM + PostgreSQL + pgvector
 
 ---
 
@@ -32,7 +30,7 @@ This must be run before executing any code or tooling in the project.
 
 ## Testing
 
-There are currently **no tests** in this project. Do not generate test files or reference a test suite unless explicitly asked.
+The project uses `pytest` for testing. Run tests using `pytest tests/`. Ensure you have a PostgreSQL instance with the `vector` extension enabled.
 
 ---
 
@@ -245,6 +243,20 @@ from typing import List
 names: List[str] = []
 ```
 
+### Preferred Type References
+
+Prefer direct type imports over dotted references for type annotations.
+
+```python
+# Good
+from asyncio import AbstractEventLoop
+loop: AbstractEventLoop
+
+# Bad
+import asyncio
+loop: asyncio.AbstractEventLoop
+```
+
 ### Post-Task
 
 Once you're done writing your changes, execute the following command:
@@ -264,6 +276,7 @@ Fix any error returned by the linters, even if they are not related to the task 
 
 ## General Agent Guidance
 
+- Define one file per class. No file should have more than two class definitions.
 - Do not introduce new dependencies without being asked.
 - Do not change the database schema without being asked.
 - When adding a new endpoint, always create accompanying request/response Pydantic models.
