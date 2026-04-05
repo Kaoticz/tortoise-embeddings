@@ -31,6 +31,7 @@ if (-not (Test-Path $venv_activator_path))
 
 # Install dependencies
 pip install -e .[dev]
+Remove-Item -Path .\tortoise_embedding.egg-info -Recurse -Force
 
 Write-Host "`nVirtual environment activated."
 Write-Host "To execute the unit tests, run ${blue_color}pytest${reset_color}"

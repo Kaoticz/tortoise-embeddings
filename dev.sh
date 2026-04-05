@@ -35,6 +35,7 @@ fi
 # Activate the virtual environment
 source "$venv_activator_path"
 pip install -e .[dev]
+rm -rf ./tortoise_embeddings.egg-info
 
 echo -e '\nVirtual environment activated.'
 echo -e "To execute the unit tests, run ${blue_color}pytest${reset_color}"
