@@ -112,7 +112,3 @@ export PSQL_CONNECTION_STRING="postgres://user:pass@host:port/db"
 export GEMINI_API_KEY="your_api_key" # Optional for Gemini integration tests
 pytest tests/
 ```
-
-## License
-
-MIT

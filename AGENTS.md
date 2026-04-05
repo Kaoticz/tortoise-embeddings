@@ -276,9 +276,8 @@ Fix any error returned by the linters, even if they are not related to the task 
 
 ## General Agent Guidance
 
-- Define one file per class. No file should have more than two class definitions.
 - Do not introduce new dependencies without being asked.
 - Do not change the database schema without being asked.
-- When adding a new endpoint, always create accompanying request/response Pydantic models.
+- Define one file per class. No file should have more than one class definition.
 - When in doubt about naming or structure, follow the patterns already established in the codebase.
 - When in doubt about architecture, ask the user before performing any action.
