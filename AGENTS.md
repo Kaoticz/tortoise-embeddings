@@ -7,6 +7,7 @@ This file describes the project's stack, conventions, and code standards for AI 
 ## Stack
 
 - **ORM / Database:** TortoiseORM + PostgreSQL + pgvector
+- **Unit Tests**: pytest
 
 ---
 
