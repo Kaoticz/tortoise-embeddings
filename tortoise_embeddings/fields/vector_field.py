@@ -10,16 +10,21 @@ class VectorField(Field[Any]):
 
     :param dimensions: The number of dimensions for the vector.
     """
-    def __init__(self, dimensions: int, **kwargs: Any) -> None:
+
+    def __init__(self, dimensions: int | None = None, **kwargs: Any) -> None:
         """
         Initialize the VectorField.
 
         :param dimensions: The number of dimensions for the vector.
         :param kwargs: Additional arguments for the base Field class.
         """
-        self.dimensions: int = dimensions
+        self.dimensions: int | None = dimensions
         super().__init__(**kwargs)
-        self.SQL_TYPE: str = f'vector({self.dimensions})'
+        if self.dimensions is not None:
+            self.SQL_TYPE: str = f'vector({self.dimensions})'
+        else:
+            self.SQL_TYPE = 'vector'
+
 
     @override
     def get_db_field_types(self) -> dict[str, str]:
@@ -28,7 +33,9 @@ class VectorField(Field[Any]):
 
         :returns: A dictionary with the database dialect as key and the SQL type as value.
         """
-        return {'postgres': f'vector({self.dimensions})'}
+        if self.dimensions is not None:
+            return {'postgres': f'vector({self.dimensions})'}
+        return {'postgres': 'vector'}
 
     @override
     def to_db_value(self, value: Any, instance: type[Model] | Model) -> Any | None:

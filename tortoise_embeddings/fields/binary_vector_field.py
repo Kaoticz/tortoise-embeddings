@@ -3,19 +3,20 @@ from typing import Any, override, cast
 from tortoise.fields import Field
 from tortoise.models import Model
 
+
 try:
     from asyncpg.pgproto.types import BitString
 except ImportError:
     BitString = None
 
-class BinaryVector(Field[Any]):
+class BinaryVectorField(Field[Any]):
     """
     Field for pgvector's `bit` type.
     """
-    dimensions: int
+    dimensions: int | None
     SQL_TYPE: str
 
-    def __init__(self, dimensions: int, **kwargs: Any) -> None:
+    def __init__(self, dimensions: int | None = None, **kwargs: Any) -> None:
         """
         Initialize the BinaryVector field.
 
@@ -24,7 +25,11 @@ class BinaryVector(Field[Any]):
         """
         self.dimensions = dimensions
         super().__init__(**kwargs)
-        self.SQL_TYPE = f'bit({self.dimensions})'
+        if self.dimensions is not None:
+            self.SQL_TYPE = f'bit({self.dimensions})'
+        else:
+            self.SQL_TYPE = 'varbit'
+
 
     @override
     def get_db_field_types(self) -> dict[str, str]:
@@ -33,7 +38,9 @@ class BinaryVector(Field[Any]):
 
         :returns: A dictionary with the database dialect as key and the SQL type as value.
         """
-        return {'postgres': f'bit({self.dimensions})'}
+        if self.dimensions is not None:
+            return {'postgres': f'bit({self.dimensions})'}
+        return {'postgres': 'varbit'}
 
     @override
     def to_db_value(self, value: Any, instance: type[Model] | Model) -> Any | None:
@@ -63,5 +70,5 @@ class BinaryVector(Field[Any]):
         if value is None:
             return None
         if hasattr(value, 'as_string'):
-            return cast(str, value.as_string())
-        return str(value)
+            return cast(str, value.as_string()).replace(' ', '')
+        return str(value).replace(' ', '')

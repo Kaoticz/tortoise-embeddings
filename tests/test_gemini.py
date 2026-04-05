@@ -2,33 +2,37 @@ from __future__ import annotations
 import os
 import pytest
 import numpy as np
-from typing import Any
+from typing import Any, cast
 from tests.models import GeminiModel
 
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
 except ImportError:
-    genai = None # type: ignore
+    genai = None  # type: ignore
+    types = None  # type: ignore
+
 
 GEMINI_KEY: str | None = os.getenv('GEMINI_API_KEY')
 
 
-@pytest.mark.skipif(genai is None, reason='google-generativeai not installed')
+@pytest.mark.skipif(genai is None, reason='google-genai not installed')
 @pytest.mark.skipif(not GEMINI_KEY, reason='GEMINI_API_KEY not set')
 async def test_gemini_embeddings() -> None:
     """
     Test generating vectors using Gemini API and storing them.
     """
-    if genai is None:
+    if genai is None or types is None:
         return
         
-    genai.configure(api_key=GEMINI_KEY)
+    client: Any = genai.Client(api_key=GEMINI_KEY)
     
     # Find an embedding model
-    models: Any = genai.list_models() # type: ignore
+    models: Any = client.models.list()
     model_name: str | None = None
     for m in models:
-        if 'embedContent' in m.supported_generation_methods:
+        # The new SDK has different attribute names, let's just try to find a known one or first one
+        if 'embedding' in m.name:
              model_name = m.name
              if 'embedding-001' in m.name or 'embedding-004' in m.name:
                  break
@@ -38,25 +42,31 @@ async def test_gemini_embeddings() -> None:
             
     text: str = 'TortoiseORM is an easy-to-use asyncio ORM inspired by Django.'
     try:
-        result: Any = genai.embed_content( # type: ignore
+        result: Any = client.models.embed_content(
             model=model_name,
-            content=text,
-            task_type='retrieval_document',
-            output_dimensionality=768
+            contents=text,
+            config=types.EmbedContentConfig(
+                task_type='RETRIEVAL_DOCUMENT',
+                output_dimensionality=768
+            )
         )
     except Exception:
         # Retry without output_dimensionality
         try:
-             result = genai.embed_content( # type: ignore
+             result = client.models.embed_content(
                 model=model_name,
-                content=text,
-                task_type='retrieval_document'
+                contents=text,
+                config=types.EmbedContentConfig(
+                    task_type='RETRIEVAL_DOCUMENT'
+                )
             )
         except Exception:
             pytest.skip(f'Failed to get embeddings from {model_name}')
             return
     
-    embedding: list[float] = result['embedding']
+    # In google-genai, result is an EmbedContentResponse object
+    embedding_values: Any = result.embeddings[0].values
+    embedding: list[float] = cast(list[float], embedding_values)
     
     # Check dimensions
     if len(embedding) != 768:

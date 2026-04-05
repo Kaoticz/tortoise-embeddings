@@ -6,8 +6,8 @@ from tortoise.filters import FilterInfoDict, get_filters_for_field as original_g
 
 from .vector_field import VectorField
 from .half_vector_field import HalfVectorField
-from .binary_vector import BinaryVector
-from .sparse_vector import SparseVector
+from .binary_vector_field import BinaryVectorField
+from .sparse_vector_field import SparseVectorField
 from ..similarity import create_vector_operator
 
 if TYPE_CHECKING:
@@ -16,9 +16,10 @@ if TYPE_CHECKING:
 __all__ = [
     'VectorField',
     'HalfVectorField',
-    'BinaryVector',
-    'SparseVector',
+    'BinaryVectorField',
+    'SparseVectorField',
 ]
+
 
 def get_vector_filters(field_name: str, source_field: str, field: fields.Field[Any]) -> dict[str, FilterInfoDict]:
     """
@@ -32,11 +33,11 @@ def get_vector_filters(field_name: str, source_field: str, field: fields.Field[A
     vector_type: str = 'vector'
     if isinstance(field, HalfVectorField):
         vector_type = 'halfvec'
-    elif isinstance(field, BinaryVector):
-        vector_type = 'bit'
-    elif isinstance(field, SparseVector):
+    elif isinstance(field, BinaryVectorField):
+        vector_type = 'bit' if field.dimensions is not None else 'varbit'
+    elif isinstance(field, SparseVectorField):
         vector_type = 'sparsevec'
-        
+
     return {
         f'{field_name}__l2': {
             'field': field_name,
@@ -61,7 +62,7 @@ def get_vector_filters(field_name: str, source_field: str, field: fields.Field[A
         f'{field_name}__hamming': {
             'field': field_name,
             'source_field': source_field,
-            'operator': create_vector_operator('<~>', '<', vector_type='bit'),
+            'operator': create_vector_operator('<~>', '<', vector_type=vector_type if 'bit' in vector_type else 'bit'),
         },
         f'{field_name}__jaccard': {
             'field': field_name,
@@ -82,9 +83,10 @@ def patched_get_filters_for_field(
     :returns: A dictionary of filters.
     """
     res: dict[str, FilterInfoDict] = original_get_filters_for_field(field_name, field, source_field)
-    if isinstance(field, (VectorField, BinaryVector, SparseVector)):
+    if isinstance(field, (VectorField, BinaryVectorField, SparseVectorField)):
         res.update(get_vector_filters(field_name, source_field, field))
     return res
+
 
 import tortoise.filters
 tortoise.filters.get_filters_for_field = patched_get_filters_for_field 
@@ -100,7 +102,7 @@ def patched_add_field(self: MetaInfo, name: str, value: fields.Field[Any]) -> No
     :param value: The field instance.
     """
     original_add_field(self, name, value)
-    if isinstance(value, (VectorField, BinaryVector, SparseVector)):
+    if isinstance(value, (VectorField, BinaryVectorField, SparseVectorField)):
         field_filters: dict[str, FilterInfoDict] = get_vector_filters(
             field_name=name, source_field=value.source_field or name, field=value
         )
@@ -108,7 +110,8 @@ def patched_add_field(self: MetaInfo, name: str, value: fields.Field[Any]) -> No
         if hasattr(self, 'filters'):
             self.filters.update(field_filters)
 
-MetaInfo.add_field = patched_add_field # type: ignore
+MetaInfo.add_field = patched_add_field  # type: ignore
+
 
 def register_filters() -> None:
     """
@@ -118,7 +121,7 @@ def register_filters() -> None:
     for app in Tortoise.apps.values():
         for model in app.values():
             for name, field in model._meta.fields_map.items():
-                if isinstance(field, (VectorField, BinaryVector, SparseVector)):
+                if isinstance(field, (VectorField, BinaryVectorField, SparseVectorField)):
                     field_filters: dict[str, FilterInfoDict] = get_vector_filters(
                         field_name=name, source_field=field.source_field or name, field=field
                     )
@@ -135,13 +138,14 @@ async def patched_init(cls: type[OriginalTortoise], config: dict[str, Any] | Non
     await original_init(config=config, config_file=config_file, _create_db=_create_db, db_url=db_url, modules=modules, use_tz=use_tz, timezone=timezone, routers=routers, **kwargs)
     register_filters()
 
-OriginalTortoise.init = classmethod(patched_init) # type: ignore
+OriginalTortoise.init = classmethod(patched_init)  # type: ignore
+
 
 # Aerich support
 try:
     import aerich.ddl.postgres
-    from ..ddl import AerichVectorPostgresDDL
+    from ..aerich_vector_postgres_ddl import AerichVectorPostgresDDL
     if AerichVectorPostgresDDL is not None:
-        aerich.ddl.postgres.PostgresDDL = AerichVectorPostgresDDL # type: ignore
+        aerich.ddl.postgres.PostgresDDL = AerichVectorPostgresDDL  # type: ignore
 except (ImportError, AttributeError):
     pass

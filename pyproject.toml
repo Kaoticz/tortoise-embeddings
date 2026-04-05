@@ -46,6 +46,9 @@ reportUnknownLambdaType = false
 testpaths = ['tests']
 addopts = ['-v', '--showlocals']
 asyncio_mode = 'auto'
+filterwarnings = [
+    'ignore:_UnionGenericAlias is deprecated:DeprecationWarning:google.genai.types',
+]
 
 [project.optional-dependencies]
 dev = [
@@ -55,5 +58,6 @@ dev = [
     'basedpyright==1.39.0',
     'pytest==9.0.2',
     'pytest-asyncio==1.3.0',
-    'google-generativeai==0.8.6'
+    'google-genai==1.70.0',
+    'python-dotenv==1.2.2'
 ]

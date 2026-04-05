@@ -34,11 +34,11 @@ class VectorDistance(Term):
             self._left = left if isinstance(left, Term) else Term.wrap_constant(left)
             
         self._right: Term
-        if vector_type == 'bit' and isinstance(right, str) and BitString is not None:
-             self._right = Term.wrap_constant(BitString(cast(Any, right)))
+        if 'bit' in vector_type and isinstance(right, str) and BitString is not None:
+            self._right = Term.wrap_constant(BitString(cast(Any, right)))
         else:
-             self._right = right if isinstance(right, Term) else Term.wrap_constant(right)
-             
+            self._right = right if isinstance(right, Term) else Term.wrap_constant(right)
+
         self._operator_symbol: str = operator_symbol
         self._vector_type: str = vector_type
 
@@ -52,15 +52,15 @@ class VectorDistance(Term):
         """
         left_sql: str = self._left.get_sql(ctx)
         right_sql: str = self._right.get_sql(ctx)
-        
+
         # Always cast if not a field to be safe
         if not isinstance(self._left, PypikaField):
-             left_sql = f'({left_sql})::{self._vector_type}'
+            left_sql = f'({left_sql})::{self._vector_type}'
         if not isinstance(self._right, PypikaField):
-             # Remove explicit cast for bit to avoid length mismatch issue
-             if self._vector_type != 'bit':
-                 right_sql = f'({right_sql})::{self._vector_type}'
-             
+            # Remove explicit cast for bit to avoid length mismatch issue
+            if 'bit' not in self._vector_type:
+                right_sql = f'({right_sql})::{self._vector_type}'
+
         sql: str = f'({left_sql} {self._operator_symbol} {right_sql})'
         return format_alias_sql(sql, self.alias, ctx)
 
@@ -156,10 +156,10 @@ class VectorThresholdCriterion(Criterion):
         else:
             self._field = field if isinstance(field, Term) else Term.wrap_constant(field)
 
-        if vector_type == 'bit' and isinstance(target, str) and BitString is not None:
-             self._target = Term.wrap_constant(BitString(cast(Any, target)))
+        if 'bit' in vector_type and isinstance(target, str) and BitString is not None:
+            self._target = Term.wrap_constant(BitString(cast(Any, target)))
         else:
-             self._target = target if isinstance(target, Term) else Term.wrap_constant(target)
+            self._target = target if isinstance(target, Term) else Term.wrap_constant(target)
 
         self._distance_op = distance_op
         self._compare_op = compare_op
@@ -177,12 +177,12 @@ class VectorThresholdCriterion(Criterion):
         field_sql: str = self._field.get_sql(ctx)
         target_sql: str = self._target.get_sql(ctx)
         threshold_sql: str = self._threshold.get_sql(ctx)
-        
+
         if not isinstance(self._target, PypikaField):
-             # Remove explicit cast for bit to avoid length mismatch issue
-             if self._vector_type != 'bit':
-                 target_sql = f'({target_sql})::{self._vector_type}'
-             
+            # Remove explicit cast for bit to avoid length mismatch issue
+            if 'bit' not in self._vector_type:
+                target_sql = f'({target_sql})::{self._vector_type}'
+
         return f'{field_sql} {self._distance_op} {target_sql} {self._compare_op} {threshold_sql}'
 
 def create_vector_operator(distance_op: str, compare_op: str, vector_type: str = 'vector') -> Callable[[Term, Any], Criterion]:
