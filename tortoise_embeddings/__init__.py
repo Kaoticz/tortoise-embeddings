@@ -2,6 +2,8 @@ from .fields import VectorField, HalfVectorField, BinaryVectorField, SparseVecto
 from .vector_asyncpg_db_client import VectorAsyncpgDBClient
 from .postgres_ddl import PostgresDDL
 from .aerich_vector_postgres_ddl import AerichVectorPostgresDDL
+from .vector_distance import VectorDistance
+from .vector_threshold_criterion import VectorThresholdCriterion
 
 __all__ = [
     'VectorField',
@@ -11,4 +13,6 @@ __all__ = [
     'VectorAsyncpgDBClient',
     'PostgresDDL',
     'AerichVectorPostgresDDL',
+    'VectorDistance',
+    'VectorThresholdCriterion',
 ]

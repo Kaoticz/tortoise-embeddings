@@ -9,6 +9,7 @@ try:
 except ImportError:
     HalfVector = None
 
+
 class HalfVectorField(VectorField):
     """
     Field for pgvector's `halfvec` type.
@@ -26,7 +27,6 @@ class HalfVectorField(VectorField):
             self.SQL_TYPE: str = f'halfvec({self.dimensions})'
         else:
             self.SQL_TYPE = 'halfvec'
-
 
     @override
     def get_db_field_types(self) -> dict[str, str]:

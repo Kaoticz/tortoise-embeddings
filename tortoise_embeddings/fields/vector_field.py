@@ -4,6 +4,7 @@ from tortoise.fields import Field
 from tortoise.models import Model
 import numpy as np
 
+
 class VectorField(Field[Any]):
     """
     Field for pgvector's `vector` type.
@@ -24,7 +25,6 @@ class VectorField(Field[Any]):
             self.SQL_TYPE: str = f'vector({self.dimensions})'
         else:
             self.SQL_TYPE = 'vector'
-
 
     @override
     def get_db_field_types(self) -> dict[str, str]:

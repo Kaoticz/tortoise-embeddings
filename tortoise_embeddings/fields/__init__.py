@@ -71,6 +71,7 @@ def get_vector_filters(field_name: str, source_field: str, field: fields.Field[A
         },
     }
 
+
 def patched_get_filters_for_field(
     field_name: str, field: fields.Field[Any] | None, source_field: str
 ) -> dict[str, FilterInfoDict]:
@@ -93,6 +94,7 @@ tortoise.filters.get_filters_for_field = patched_get_filters_for_field
 
 original_add_field = MetaInfo.add_field
 
+
 def patched_add_field(self: MetaInfo, name: str, value: fields.Field[Any]) -> None:
     """
     Patched version of MetaInfo.add_field to ensure vector filters are registered.
@@ -109,6 +111,7 @@ def patched_add_field(self: MetaInfo, name: str, value: fields.Field[Any]) -> No
         self._filters.update(field_filters)
         if hasattr(self, 'filters'):
             self.filters.update(field_filters)
+
 
 MetaInfo.add_field = patched_add_field  # type: ignore
 
@@ -128,8 +131,10 @@ def register_filters() -> None:
                     model._meta._filters.update(field_filters)
                     model._meta.filters.update(field_filters)
 
+
 from tortoise import Tortoise as OriginalTortoise
 original_init = OriginalTortoise.init
+
 
 async def patched_init(cls: type[OriginalTortoise], config: dict[str, Any] | None = None, config_file: str | None = None, _create_db: bool = False, db_url: str | None = None, modules: dict[str, Any] | None = None, use_tz: bool = False, timezone: str = 'UTC', routers: list[str | type] | None = None, **kwargs: Any) -> None:
     """

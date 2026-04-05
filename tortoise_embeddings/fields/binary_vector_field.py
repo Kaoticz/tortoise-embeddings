@@ -9,6 +9,7 @@ try:
 except ImportError:
     BitString = None
 
+
 class BinaryVectorField(Field[Any]):
     """
     Field for pgvector's `bit` type.
@@ -29,7 +30,6 @@ class BinaryVectorField(Field[Any]):
             self.SQL_TYPE = f'bit({self.dimensions})'
         else:
             self.SQL_TYPE = 'varbit'
-
 
     @override
     def get_db_field_types(self) -> dict[str, str]:

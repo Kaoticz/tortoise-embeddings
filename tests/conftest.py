@@ -39,6 +39,7 @@ TORTOISE_CONFIG: dict[str, Any] = {
     },
 }
 
+
 @pytest.fixture(autouse=True)
 async def initialize_tests() -> AsyncGenerator[None, None]:
     """
@@ -80,6 +81,7 @@ async def initialize_tests() -> AsyncGenerator[None, None]:
     yield
     await Tortoise.close_connections()
 
+
 @pytest.fixture(scope='session', autouse=True)
 async def cleanup_db() -> AsyncGenerator[None, None]:
     """
@@ -111,6 +113,7 @@ async def cleanup_db() -> AsyncGenerator[None, None]:
     migrations_dir: str = 'tests/migrations'
     if os.path.exists(migrations_dir):
         shutil.rmtree(migrations_dir)
+
 
 @pytest.fixture(scope='session')
 def event_loop() -> Generator[AbstractEventLoop, None, None]:

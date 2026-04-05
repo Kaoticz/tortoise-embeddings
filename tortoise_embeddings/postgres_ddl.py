@@ -6,6 +6,7 @@ from tortoise.backends.base_postgres.schema_generator import BasePostgresSchemaG
 if TYPE_CHECKING:  # pragma: nocoverage
     from tortoise import Model
 
+
 class PostgresDDL(BasePostgresSchemaGenerator):
     """
     Postgres schema generator that injects vector extension creation.

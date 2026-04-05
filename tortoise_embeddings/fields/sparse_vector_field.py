@@ -10,6 +10,7 @@ try:
 except ImportError:
     PGSparseVector = None
 
+
 class SparseVectorField(Field[Any]):
     """
     Field for pgvector's `sparsevec` type.
@@ -28,7 +29,6 @@ class SparseVectorField(Field[Any]):
             self.SQL_TYPE: str = f'sparsevec({self.dimensions})'
         else:
             self.SQL_TYPE = 'sparsevec'
-
 
     @override
     def get_db_field_types(self) -> dict[str, str]:
