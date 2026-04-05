@@ -4,9 +4,11 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'tortoise-embeddings'
-version = '0.0.1'
-description = 'Adds pgvector support to TortoiseORM. '
-readme = 'README.md'
+version = '1.0.0'
+description = 'Adds pgvector support to TortoiseORM.'
+readme = {file = 'README.md', content-type = 'text/markdown'}
+license = 'Apache-2.0'
+license-files = ['LICENSE']
 requires-python = '>=3.14'
 authors = [
     {name = 'Kaoticz', email = '1812311+Kaoticz@users.noreply.github.com'},
@@ -34,7 +36,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 ignore_missing_imports = true
 
-[tool.pyright]
+[tool.basedpyright]
 typeCheckingMode = 'standard'
 analyzeUnannotatedFunctions = true
 reportDeprecated = true

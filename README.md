@@ -112,7 +112,7 @@ Set the following environment variables:
 | PSQL_CONNECTION_STRING         | A connection string to a PostgreSQL database. | `postgres://user:password@host:port/database`                           |
 | GEMINI_API_KEY                 | An API key to Google GenAI. (optional)        | Go to [aistudio.google.com](aistudio.google.com) and create an API key. |
 
-## Dependencies:
+## Dependencies
 
 - tortoise-orm>=0.25.0,<1.0.0
 - aerich>=0.9.0 
@@ -128,6 +128,14 @@ Tests require a PostgreSQL database with the `pgvector` extension.
 export PSQL_CONNECTION_STRING="postgres://user:password@host:port/database"
 export GEMINI_API_KEY="your_api_key" # Optional for Gemini integration tests
 pytest tests/
+```
+
+## Publishing
+
+Execute the following command to generate the distributable files.
+
+```bash
+python -m build
 ```
 
 ## License
