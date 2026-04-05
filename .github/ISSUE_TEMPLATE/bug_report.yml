@@ -1,0 +1,63 @@
+name: "Bug Report"
+description: File a bug report.
+labels: ["bug"]
+body:
+- type: "input"
+  attributes:
+    label: "Version"
+    description: "Which version of tortoise-embeddings are you using?"
+    placeholder: "e.g., v1.0.0"
+  validations:
+    required: true
+- type: "textarea"
+  attributes:
+    label: "Description"
+    description: "Give a concise description of the problem"
+  validations:
+    required: true
+- type: "textarea"
+  attributes:
+    label: "Reproduction Steps"
+    description: "Enumerate the steps needed to reproduce the behavior"
+    value: |
+      1. Define a model with ...
+      2. Run query ...
+      3. See error:
+  validations:
+    required: true
+- type: "textarea"
+  attributes:
+    label: "Expected Behavior"
+    description: "Describe what you expected to happen"
+  validations:
+    required: true
+- type: "textarea"
+  attributes:
+    label: "Actual Behavior"
+    description: "Describe what actually happened"
+  validations:
+    required: false
+- type: "textarea"
+  attributes:
+    label: "Traceback"
+    description: "Paste your error logs here."
+    render: "shell"
+  validations:
+    required: false
+- type: "textarea"
+  attributes:
+    label: "Notes"
+    description: "Add any other relevant information about the problem here"
+    placeholder: "e.g., Docker image, OS version, etc"
+  validations:
+    required: false
+- type: "checkboxes"
+  id: preflight
+  attributes:
+    label: "Pre-flight Check"
+    description: "Please verify these steps before submitting."
+    options:
+      - label: "I have verified that `pgvector` is installed in my PostgreSQL instance and the `vector` extension has been enabled on my database (`CREATE EXTENSION vector;`)."
+      - label: "I am using TortoiseORM >= 0.25.0."
+  validations:
+    required: true
