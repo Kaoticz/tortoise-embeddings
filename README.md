@@ -114,12 +114,6 @@ Set the following environment variables:
 
 ## Dependencies:
 
-### Internal
-
-- None
-
-### External
-
 - tortoise-orm>=0.25.0,<1.0.0
 - aerich>=0.9.0 
 - asyncpg>=0.31.0
@@ -135,3 +129,18 @@ export PSQL_CONNECTION_STRING="postgres://user:password@host:port/database"
 export GEMINI_API_KEY="your_api_key" # Optional for Gemini integration tests
 pytest tests/
 ```
+
+## License
+Copyright 2026 Kotz
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+> http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
