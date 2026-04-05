@@ -29,7 +29,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.13.x'
+        python-version: '3.14.x'
 
     - name: Configure Git for private repo access
       run: |
@@ -37,32 +37,32 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m venv ./venv
-        source ./venv/bin/activate
+        python -m venv ./.venv
+        source ./.venv/bin/activate
         pip install --upgrade pip
-        pip install -e .[dev]
+        pip install -e .
 
     - name: Type Checking (MyPy)
       run: |
-        source ./venv/bin/activate
+        source ./.venv/bin/activate
         echo -e '\n\n>>> Starting mypy analysis...\n\n'
         mypy .
 
     - name: Type Checking (BasedPyright)
       run: |
-        source ./venv/bin/activate
+        source ./.venv/bin/activate
         echo -e '\n\n>>> Starting basedpyright analysis...\n\n'
         basedpyright .
 
     - name: Unit Tests (pytest)
       run: |
-        source ./venv/bin/activate
+        source ./.venv/bin/activate
         pytest -v --showlocals
 
     - name: Build
       run: |
         find . -type d -name '*.egg-info' -exec rm -rf -- {} +
-        source ./venv/bin/activate
+        source ./.venv/bin/activate
         python -m build
 
     - name: Publish

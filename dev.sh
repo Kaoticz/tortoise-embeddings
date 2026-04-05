@@ -20,6 +20,20 @@ quit()
   unset quit
 }
 
+#########
+# Shorthand for running pytest with a temporary __init__.py
+#########
+# Usage:
+## pytest
+## pytest <args>
+#########
+pytest()
+{
+  touch ./tests/__init__.py
+  "${venv_path}/${venv_subdir}/pytest" "$*"
+  rm ./tests/__init__.py
+}
+
 
 # Main Entry Point
 if [[ ${BASH_SOURCE-} == "$0" ]]; then

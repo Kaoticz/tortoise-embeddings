@@ -19,6 +19,33 @@ function quit
 }
 
 
+#########
+# Shorthand for running pytest with a temporary __init__.py
+#########
+# Usage:
+## pytest
+## pytest <args>
+#########
+function pytest {
+    $InitFile = "./tests/__init__.py"
+    $PytestExe = Join-Path $VenvPath $VenvSubdir "pytest"
+
+    # Create the file
+    New-Item -Path $InitFile -ItemType File -Force | Out-Null
+
+    try {
+        # Run pytest with all passed arguments ($args)
+        & $PytestExe $args
+    }
+    finally {
+        # Ensure the file is removed even if pytest fails
+        if (Test-Path $InitFile) {
+            Remove-Item $InitFile
+        }
+    }
+}
+
+
 # Main Entry Point
 # Create the virtual environment if it doesn't exist.
 if (-not (Test-Path $venv_activator_path))
