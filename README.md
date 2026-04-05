@@ -21,9 +21,29 @@ Tortoise Embeddings adds `pgvector` support to TortoiseORM, enabling efficient v
 pip install tortoise-embeddings
 ```
 
-Make sure you have `pgvector` installed in your PostgreSQL database.
-
 ## Usage
+
+### Initialize with Custom Client
+
+To enable binary codecs and migration support, use the provided `VectorAsyncpgDBClient`.
+
+```python
+from tortoise import Tortoise
+import tortoise.backends.asyncpg
+from tortoise_embeddings import VectorAsyncpgDBClient
+
+# Override the client class for the asyncpg backend
+tortoise.backends.asyncpg.client_class = VectorAsyncpgDBClient
+
+async def init():
+    await Tortoise.init(
+        db_url='postgres://user:pass@host:port/db',
+        modules={'models': ['your_models_module']}
+    )
+    await Tortoise.generate_schemas()
+```
+
+Make sure you have `pgvector` installed in your PostgreSQL database.
 
 ### Define Your Models
 
@@ -40,26 +60,6 @@ class Item(Model):
     half_embedding = HalfVectorField(dimensions=3)
     binary_embedding = BinaryVectorField(dimensions=4)
     sparse_embedding = SparseVectorField(dimensions=3)
-```
-
-### Initialize with Custom Client
-
-To enable binary codecs and migration support, use the provided `AsyncpgDBClient`:
-
-```python
-from tortoise import Tortoise
-import tortoise.backends.asyncpg
-from tortoise_embeddings import VectorAsyncpgDBClient
-
-# Override the client class for the asyncpg backend
-tortoise.backends.asyncpg.client_class = VectorAsyncpgDBClient
-
-async def init():
-    await Tortoise.init(
-        db_url='postgres://user:pass@host:port/db',
-        modules={'models': ['your_models_module']}
-    )
-    await Tortoise.generate_schemas()
 ```
 
 ### Similarity Search
