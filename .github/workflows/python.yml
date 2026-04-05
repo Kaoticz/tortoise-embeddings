@@ -59,6 +59,5 @@ jobs:
           PSQL_CONNECTION_STRING: postgres://postgres:password@localhost:5432/tortoise-embeddings-test
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          export PYTHONPATH=$PYTHONPATH:.
           source ./.venv/bin/activate
-          pytest tests/
+          pytest ./tests/
