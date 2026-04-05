@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: ankane/pgvector:latest
+        image: pgvector/pgvector:pg18-trixie
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
