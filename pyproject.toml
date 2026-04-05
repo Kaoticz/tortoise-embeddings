@@ -1,5 +1,5 @@
 [build-system]
-requires = ['setuptools>=82.0.1', 'wheel>=0.46.3']
+requires = ['setuptools>=82.0.1', 'setuptools-scm[simple]>=10.0.5', 'wheel>=0.46.3']
 build-backend = 'setuptools.build_meta'
 
 [project]
@@ -54,8 +54,8 @@ filterwarnings = [
 
 [project.optional-dependencies]
 dev = [
-    'setuptools==82.0.1',
-    'build==1.4.2',
+    'setuptools>=82.0.1',
+    'build>=1.4.2',
     'mypy',
     'basedpyright',
     'pytest>=9.0.2',
