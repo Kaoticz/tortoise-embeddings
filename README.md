@@ -9,7 +9,6 @@ Tortoise Embeddings adds `pgvector` support to TortoiseORM, enabling efficient v
     - `HalfVectorField`: Supports `halfvec` type.
     - `BinaryVector`: Supports `bit` type.
     - `SparseVector`: Supports `sparsevec` type.
-- **Aerich Migration Support:** Automatically includes vector-based types from your models into the migration scripts.
 - **Similarity Operations:**
     - **Custom Functions:** `L2Distance`, `CosineDistance`, `InnerProduct`, `L1Distance`, `HammingDistance`, `JaccardDistance`.
     - **Custom Filters:** Convenient filter suffixes -  `__l2`, `__cosine`, `__inner`, `__l1`, `__hamming`, and `__jaccard`.
@@ -18,6 +17,10 @@ Tortoise Embeddings adds `pgvector` support to TortoiseORM, enabling efficient v
 ## Installation
 
 ```bash
+# For tortoise-orm>=0.25.0
+pip install tortoise-embeddings==1.0.0
+
+#for tortoise-orm>=1.1.0
 pip install tortoise-embeddings
 ```
 
@@ -25,7 +28,7 @@ pip install tortoise-embeddings
 
 ### Initialize with Custom Client
 
-To enable binary codecs and migration support, use the provided `VectorAsyncpgDBClient`.
+To enable binary codecs and migrations, use the provided `VectorAsyncpgDBClient`.
 
 ```python
 from tortoise import Tortoise
@@ -94,15 +97,6 @@ for item in items:
     print(f"Item {item.id} has distance {item.dist}")
 ```
 
-### Aerich Migrations
-
-If you use `aerich`, simply use the `AerichVectorPostgresDDL` to ensure the `vector` extension is created:
-
-```python
-# In your project configuration
-from tortoise_embeddings import AerichVectorPostgresDDL
-# This is usually handled automatically if you use the VectorAsyncpgDBClient
-```
 # Development setup
 
 Set the following environment variables:
@@ -114,8 +108,7 @@ Set the following environment variables:
 
 ## Dependencies
 
-- tortoise-orm>=0.25.0,<1.0.0
-- aerich>=0.9.0 
+- tortoise-orm>=1.1.0
 - asyncpg>=0.31.0
 - pgvector>=0.4.0
 - numpy>=2.4.0

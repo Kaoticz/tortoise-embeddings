@@ -10,7 +10,6 @@ from asyncio import AbstractEventLoop
 from collections.abc import AsyncGenerator, Generator
 from typing import Any
 import pytest
-from aerich import Command
 from tortoise import Tortoise
 import tortoise.backends.asyncpg
 from tortoise_embeddings.vector_asyncpg_db_client import VectorAsyncpgDBClient
@@ -33,7 +32,7 @@ TORTOISE_CONFIG: dict[str, Any] = {
     'connections': {'default': DB_URL},
     'apps': {
         'models': {
-            'models': ['tests.models', 'aerich.models'],
+            'models': ['tests.models'],
             'default_connection': 'default',
         }
     },
@@ -43,7 +42,7 @@ TORTOISE_CONFIG: dict[str, Any] = {
 @pytest.fixture(autouse=True)
 async def initialize_tests() -> AsyncGenerator[None, None]:
     """
-    Initialize Tortoise ORM and apply Aerich migrations for tests.
+    Initialize Tortoise ORM and generate schemas for tests.
 
     :raises RuntimeError: If PSQL_CONNECTION_STRING is not set.
     """
@@ -58,26 +57,19 @@ async def initialize_tests() -> AsyncGenerator[None, None]:
     await Tortoise.init(config=config)
     conn: Any = Tortoise.get_connection('default')
     try:
-        await conn.execute_query('DROP TABLE IF EXISTS aerich CASCADE;')
-        await conn.execute_query('DROP TABLE IF EXISTS vector_model CASCADE;')
-        await conn.execute_query('DROP TABLE IF EXISTS variable_vector_model CASCADE;')
-        await conn.execute_query('DROP TABLE IF EXISTS nullable_vector_model CASCADE;')
-        await conn.execute_query('DROP TABLE IF EXISTS nullable_variable_vector_model CASCADE;')
-        await conn.execute_query('DROP TABLE IF EXISTS gemini_model CASCADE;')
+        # Get all tables in the current schema
+        _, tables = await conn.execute_query('''
+            SELECT tablename FROM pg_catalog.pg_tables 
+            WHERE schemaname = 'public'
+        ''')
+        for table in tables:
+            await conn.execute_query(f'DROP TABLE IF EXISTS "{table["tablename"]}" CASCADE;')
     except Exception:
         pass
-    await Tortoise.close_connections()
-
-    # Aerich migration logic
-    migrations_dir: str = 'tests/migrations'
-    if os.path.exists(migrations_dir):
-        shutil.rmtree(migrations_dir)
-
-    command: Command = Command(tortoise_config=config, location=migrations_dir)
-    await command.init()
-    await command.init_db(safe=True)
-
-    await Tortoise.init(config=config)
+    
+    # Generate schemas
+    await Tortoise.generate_schemas()
+    
     yield
     await Tortoise.close_connections()
 
@@ -109,10 +101,6 @@ async def cleanup_db() -> AsyncGenerator[None, None]:
     except Exception:
         pass
     await Tortoise.close_connections()
-
-    migrations_dir: str = 'tests/migrations'
-    if os.path.exists(migrations_dir):
-        shutil.rmtree(migrations_dir)
 
 
 @pytest.fixture(scope='session')

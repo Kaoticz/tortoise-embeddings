@@ -139,18 +139,94 @@ original_init = OriginalTortoise.init
 async def patched_init(cls: type[OriginalTortoise], config: dict[str, Any] | None = None, config_file: str | None = None, _create_db: bool = False, db_url: str | None = None, modules: dict[str, Any] | None = None, use_tz: bool = False, timezone: str = 'UTC', routers: list[str | type] | None = None, **kwargs: Any) -> None:
     """
     Patched version of Tortoise.init to ensure filters are registered after initialization.
+
+    :param cls: The Tortoise class.
+    :param config: The configuration dictionary.
+    :param config_file: Path to a configuration file.
+    :param _create_db: Whether to create the database if it doesn't exist.
+    :param db_url: The database URL.
+    :param modules: Dictionary of model modules.
+    :param use_tz: Whether to use timezone-aware datetimes.
+    :param timezone: The timezone to use.
+    :param routers: List of database routers.
+    :param kwargs: Additional arguments for initialization.
     """
     await original_init(config=config, config_file=config_file, _create_db=_create_db, db_url=db_url, modules=modules, use_tz=use_tz, timezone=timezone, routers=routers, **kwargs)
     register_filters()
 
 OriginalTortoise.init = classmethod(patched_init)  # type: ignore
 
-
-# Aerich support
+# Migration support
 try:
-    import aerich.ddl.postgres
-    from ..aerich_vector_postgres_ddl import AerichVectorPostgresDDL
-    if AerichVectorPostgresDDL is not None:
-        aerich.ddl.postgres.PostgresDDL = AerichVectorPostgresDDL  # type: ignore
+    from collections.abc import Sequence
+    from tortoise.migrations.operations import RunSQL, CreateModel, AddField, AlterField
+    from tortoise.migrations.schema_generator.operation_generator import OperationGenerator
+    from tortoise.migrations.writer import ImportManager, MigrationWriter
+
+    # 1. Patch OperationGenerator to inject the RunSQL operation
+    original_generate = OperationGenerator.generate
+
+
+    def patched_generate(self: OperationGenerator, app_labels: Sequence[str] | None = None) -> list[Any]:
+        """
+        Patched version of OperationGenerator.generate to inject CREATE EXTENSION vector.
+        """
+        operations: list[Any] = original_generate(self, app_labels=app_labels)
+
+        has_vector: bool = False
+        for op in operations:
+            if isinstance(op, CreateModel):
+                for _, field in op.fields:
+                    if isinstance(field, (VectorField, HalfVectorField, BinaryVectorField, SparseVectorField)):
+                        has_vector = True
+                        break
+            elif isinstance(op, (AddField, AlterField)):
+                if isinstance(op.field, (VectorField, HalfVectorField, BinaryVectorField, SparseVectorField)):
+                    has_vector = True
+            if has_vector:
+                break
+
+        if has_vector:
+            # Avoid duplicate if already present
+            already_has: bool = False
+            for op in operations:
+                if (isinstance(op, RunSQL) and isinstance(
+                    op.sql, str
+                ) and 'CREATE EXTENSION IF NOT EXISTS vector' in op.sql):
+                    already_has = True
+                    break
+
+            if not already_has:
+                operations.insert(
+                    0,
+                    RunSQL(sql='CREATE EXTENSION IF NOT EXISTS vector;', reverse_sql='DROP EXTENSION IF EXISTS vector;')
+                )
+
+        return operations
+
+
+    OperationGenerator.generate = patched_generate  # type: ignore
+
+    # 2. Patch MigrationWriter to teach it how to write RunSQL to the file
+    original_format_operation = MigrationWriter._format_operation
+
+
+    def patched_format_operation(self: MigrationWriter, operation: Any, imports: ImportManager, indent: str) -> list[str]:
+        """
+        Patched version of MigrationWriter._format_operation to handle RunSQL.
+        """
+        if isinstance(operation, RunSQL):
+            imports.add_from('tortoise.migrations.operations', 'RunSQL')
+
+            sql = operation.sql
+            rev = operation.reverse_sql
+            # Format the line as it will appear in the migrations/models.py file
+            return [f'{indent}RunSQL(sql={sql!r}, reverse_sql={rev!r}),']
+
+        return original_format_operation(self, operation, imports, indent=indent)
+
+
+    MigrationWriter._format_operation = patched_format_operation  # type: ignore
+
 except (ImportError, AttributeError):
     pass
