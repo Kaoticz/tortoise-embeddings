@@ -187,7 +187,7 @@ try:
                 break
 
         if has_vector:
-            # Avoid duplicate if already present
+            # Avoid duplicate if already present in operations
             already_has: bool = False
             for op in operations:
                 if (isinstance(op, RunSQL) and isinstance(
@@ -195,6 +195,16 @@ try:
                 ) and 'CREATE EXTENSION IF NOT EXISTS vector' in op.sql):
                     already_has = True
                     break
+
+            # Check if extension was already added in previous migrations
+            if not already_has:
+                for model_state in self.old_state.models.values():
+                    for field in model_state.fields.values():
+                        if isinstance(field, (VectorField, HalfVectorField, BinaryVectorField, SparseVectorField)):
+                            already_has = True
+                            break
+                    if already_has:
+                        break
 
             if not already_has:
                 operations.insert(

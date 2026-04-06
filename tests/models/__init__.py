@@ -4,6 +4,7 @@ from .nullable_vector_model import NullableVectorModel
 from .nullable_variable_vector_model import NullableVariableVectorModel
 from .gemini_model import GeminiModel
 from .migration_test_model import MigrationTestModel
+from .successive_migration_test_models import ModelA, ModelB
 
 
 __all__ = [
@@ -13,4 +14,6 @@ __all__ = [
     'NullableVariableVectorModel',
     'GeminiModel',
     'MigrationTestModel',
+    'ModelA',
+    'ModelB',
 ]
