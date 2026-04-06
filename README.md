@@ -17,7 +17,7 @@ Tortoise Embeddings adds `pgvector` support to TortoiseORM, enabling efficient v
 ## Installation
 
 ```bash
-# For tortoise-orm>=0.25.0
+# For tortoise-orm>=0.25.0,<1.0.0
 pip install tortoise-embeddings==1.0.0
 
 #for tortoise-orm>=1.1.0
