@@ -4,6 +4,7 @@ import shutil
 from typing import cast, Any
 import pytest
 from tortoise import Tortoise
+from tortoise.migrations import TortoiseOperation
 from tortoise.migrations.autodetector import MigrationAutodetector
 from tortoise.migrations.operations import RunSQL
 from tortoise.migrations.writer import MigrationWriter
@@ -48,7 +49,7 @@ async def test_migration_injection() -> None:
         writers: list[MigrationWriter] = await autodetector.changes()
         
         assert len(writers) > 0
-        initial_migration = writers[0]
+        initial_migration: MigrationWriter = writers[0]
         
         has_extension_op: bool = False
         for op in initial_migration.operations:
@@ -91,31 +92,31 @@ async def test_successive_migration_injection() -> None:
 
     try:
         # 1. Initial migration: only ModelA
-        empty_apps = StateApps()
-        empty_state = State(models={}, apps=empty_apps)
+        empty_apps: StateApps = StateApps()
+        empty_state: State = State(models={}, apps=empty_apps)
 
-        current_apps = StateApps()
-        current_state = State(models={}, apps=current_apps)
+        current_apps: StateApps = StateApps()
+        current_state: State = State(models={}, apps=current_apps)
         m1_state = ModelState.make_from_model('models', ModelA)
         current_state.models[('models', 'ModelA')] = m1_state
         current_state.reload_model('models', 'ModelA')
 
-        op_gen1 = OperationGenerator(empty_state, current_state)
-        ops1 = op_gen1.generate(app_labels=['models'])
+        op_gen1: OperationGenerator = OperationGenerator(empty_state, current_state)
+        ops1: list[TortoiseOperation] = op_gen1.generate(app_labels=['models'])
 
         has_run_sql1 = any(isinstance(op, RunSQL) and 'CREATE EXTENSION IF NOT EXISTS vector' in op.sql for op in ops1)
         assert has_run_sql1, 'First migration should have CREATE EXTENSION'
 
         # 2. Second migration: adds ModelB
-        next_state = current_state.clone()
-        m2_state = ModelState.make_from_model('models', ModelB)
+        next_state: State = current_state.clone()
+        m2_state: ModelState = ModelState.make_from_model('models', ModelB)
         next_state.models[('models', 'ModelB')] = m2_state
         next_state.reload_model('models', 'ModelB')
 
-        op_gen2 = OperationGenerator(current_state, next_state)
-        ops2 = op_gen2.generate(app_labels=['models'])
+        op_gen2: OperationGenerator = OperationGenerator(current_state, next_state)
+        ops2: list[TortoiseOperation] = op_gen2.generate(app_labels=['models'])
 
-        has_run_sql2 = any(isinstance(op, RunSQL) and 'CREATE EXTENSION IF NOT EXISTS vector' in op.sql for op in ops2)
+        has_run_sql2: bool = any(isinstance(op, RunSQL) and 'CREATE EXTENSION IF NOT EXISTS vector' in op.sql for op in ops2)
         assert not has_run_sql2, 'Second migration should NOT have CREATE EXTENSION'
 
     finally:
